@@ -10,7 +10,6 @@ class TiktokUser(BaseModel):
     id: str
     username: Optional[str] = Field(default="Unknown")
     nickname: Optional[str] = Field(default=None)
-    is_verified: bool
     avatar_url: Optional[HttpUrl] = Field(default=None)
     followers: int
     following: int
@@ -26,8 +25,9 @@ class Tiktok(BaseModel):
     video_url: HttpUrl
     cover_url: Optional[HttpUrl] = Field(default=None)
     plays_count: int
+    diggs_count: int
     comments_count: int
-    shared_count: str
+    shared_count: int
     hashtags: List[str] = Field(default=[])
     emojis: List[str] = Field(default=[])
     scraped_at: datetime = Field(default=datetime.now(UTC))
