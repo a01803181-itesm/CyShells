@@ -1,0 +1,33 @@
+from datetime import datetime, UTC
+from enum import Enum
+from pydantic import BaseModel, Field, HttpUrl
+from typing import Optional, List
+
+class Platform(Enum):
+    TIKTOK = "tiktok"
+
+class TiktokUser(BaseModel):
+    id: str
+    username: Optional[str] = Field(default="Unknown")
+    nickname: Optional[str] = Field(default=None)
+    is_verified: bool
+    avatar_url: Optional[HttpUrl] = Field(default=None)
+    followers: int
+    following: int
+    total_likes_received: int
+    total_tiktoks: int
+
+class Tiktok(BaseModel):
+    id: str
+    url: HttpUrl
+    user: TiktokUser
+    description: Optional[str] = Field(default=None)
+    created: datetime
+    video_url: HttpUrl
+    cover_url: Optional[HttpUrl] = Field(default=None)
+    plays_count: int
+    comments_count: int
+    shared_count: str
+    hashtags: List[str] = Field(default=[])
+    emojis: List[str] = Field(default=[])
+    scraped_at: datetime = Field(default=datetime.now(UTC))
