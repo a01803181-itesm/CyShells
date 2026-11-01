@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -49,6 +50,8 @@ class TestApifyTikTokFYPParser(unittest.TestCase):
         self.assertEqual(shared_count, 71)
 
     def test_details(self):
+        self.assertIsNone(self.parser.description)
+        self.assertEqual(self.parser.creation_datetime, datetime(2026, 10, 12, 1, 1, 56, tzinfo=timezone.utc))
         self.assertEqual(len(self.parser.hashtags), 0)
         self.assertEqual(len(self.parser.emojis), 0)
 

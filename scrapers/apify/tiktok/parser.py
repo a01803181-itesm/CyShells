@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, UTC
 from pydantic import HttpUrl
 from typing import Dict, Any, Optional, Tuple, List
 
@@ -40,6 +41,16 @@ class ApifyTiktokFYPParser:
             total_likes_received=total_likes_received,
             total_tiktoks=total_tiktoks
         )
+
+    @property
+    def creation_datetime(self) -> datetime:
+        unix_time = self.__payload.get("create_time", None)
+        return datetime.fromtimestamp(unix_time, tz=timezone.utc) if unix_time else datetime.now(UTC)
+
+    @property
+    def description(self) -> Optional[str]:
+        desc = self.__payload.get("desc", None)
+        return desc if desc else None
 
     @property
     def stats(self) -> Tuple[int, int, int, int]:

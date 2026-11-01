@@ -1,3 +1,5 @@
+from datetime import datetime, UTC
+from pydantic import HttpUrl
 from typing import Optional
 
 from apify_client import ApifyClientAsync
@@ -5,7 +7,7 @@ from apify_client import ApifyClientAsync
 from models.tiktok import Tiktok
 from config.settings import get_settings
 from utils.logger import logger, SUCCESS
-from parser import ApifyTiktokFYPParser
+from tiktok.parser import ApifyTiktokFYPParser
 
 async def scrape_tiktok_fyp() -> Optional[Tiktok]:
     settings = get_settings()
@@ -51,7 +53,24 @@ async def scrape_tiktok_fyp() -> Optional[Tiktok]:
         payload = items.items[0]
         parser = ApifyTiktokFYPParser(payload)
 
-        return Tiktok(...)
+        url = parser.url if parser.url else HttpUrl("https://www.tiktok.com")
+        plays_count, diggs_count, comments_count, shared_count = parser.stats
+
+        return Tiktok(
+            id=parser.id,
+            url=url,
+            user=parser.user,
+            description=parser.description,
+            created=parser.creation_datetime,
+            cover_url=parser.cover,
+            plays_count=plays_count,
+            diggs_count=diggs_count,
+            comments_count=comments_count,
+            shared_count=shared_count,
+            hashtags=parser.hashtags,
+            emojis=parser.emojis,
+            scraped_at=datetime.now(UTC)
+        )
     except Exception as e:
         logger.error(f"Apify Actor execution failed: {e}")
         return None

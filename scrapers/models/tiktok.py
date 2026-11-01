@@ -22,7 +22,6 @@ class Tiktok(BaseModel):
     user: TiktokUser
     description: Optional[str] = Field(default=None)
     created: datetime
-    video_url: HttpUrl
     cover_url: Optional[HttpUrl] = Field(default=None)
     plays_count: int
     diggs_count: int
