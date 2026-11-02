@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { 
   LayoutDashboard, 
   Filter, 
@@ -7,6 +6,7 @@ import {
   User,
   Activity
 } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 ];
 
 export default function AppShell({ children, pageTitle = "Visión General" }: { children: React.ReactNode, pageTitle?: string }) {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation()
 
   return (
     <div className="app-shell">
@@ -32,11 +32,11 @@ export default function AppShell({ children, pageTitle = "Visión General" }: { 
 
           <nav className="flex flex-col gap-2 p-2 lg:p-4 mt-4">
             {NAV_ITEMS.map((item) => {
-              const isActive = activeTab === item.id;
+              const isActive = location.pathname === item.path;
               return (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  to={item.path}
                   className={`flex items-center justify-center lg:justify-start gap-4 px-3 py-3 rounded-md transition-all duration-300 ${
                     isActive 
                       ? "bg-primary/10 border border-primary/30 shadow-[inset_0_0_15px_rgba(6,182,212,0.15)] text-primary" 
@@ -45,7 +45,7 @@ export default function AppShell({ children, pageTitle = "Visión General" }: { 
                 >
                   <item.icon className={`h-5 w-5 ${isActive ? "drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" : ""}`} />
                   <span className="sidebar-text">{item.label}</span>
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -91,11 +91,11 @@ export default function AppShell({ children, pageTitle = "Visión General" }: { 
         <nav className="app-bottom-bar">
           <div className="flex items-center justify-around h-16">
             {NAV_ITEMS.map((item) => {
-              const isActive = activeTab === item.id;
+              const isActive = location.pathname === item.path;
               return (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  to={item.path}
                   className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-all ${
                     isActive ? "text-primary" : "text-muted-foreground"
                   }`}
@@ -104,7 +104,7 @@ export default function AppShell({ children, pageTitle = "Visión General" }: { 
                     <item.icon className="h-5 w-5" />
                   </div>
                   <span className="text-[10px] font-medium leading-none">{item.label}</span>
-                </button>
+                </Link>
               );
             })}
           </div>

@@ -174,7 +174,7 @@
   }
 
   .chart-card {
-    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-[350px] md:h-[400px];
+    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-87.5 md:h-100;
   }
 
   .section-header {
@@ -194,7 +194,7 @@
   }
 
   .metadata-card {
-    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-[300px];
+    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-75;
   }
 
   .metadata-list {
@@ -220,5 +220,54 @@
 
   .metadata-item-count {
     @apply text-xs font-mono text-primary text-glow bg-primary/10 px-2 py-1 rounded-md;
+  }
+
+  .data-table-container {
+    @apply glass-panel rounded-xl flex flex-col overflow-hidden mb-8;
+  }
+
+  .data-table-controls {
+    @apply flex flex-col lg:flex-row lg:items-center justify-between p-4 md:p-6 border-b border-primary/20 gap-4;
+  }
+
+  .data-table-input {
+    @apply bg-background/40 border border-primary/30 rounded-md px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground w-full md:w-auto;
+  }
+
+  .data-table {
+    @apply w-full text-left border-collapse;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-[10px] md:text-xs font-mono tracking-widest text-muted-foreground uppercase border-b border-primary/20 whitespace-nowrap;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 text-sm font-medium border-b border-primary/10 transition-colors;
+  }
+
+  .data-table tr {
+    @apply hover:bg-white/5 cursor-pointer md:cursor-auto;
+  }
+
+  .hide-on-mobile-cell {
+    @apply hidden md:table-cell;
+  }
+
+  .mobile-expanded-row {
+    @apply md:hidden bg-background/50 border-b border-primary/10 p-4 space-y-3 shadow-inner shadow-black/20;
+  }
+
+  .badge {
+    @apply px-2 py-1 rounded-md text-xs font-mono font-bold tracking-wider;
+  }
+  .badge-alto {
+    @apply bg-destructive/20 text-destructive border border-destructive/50;
+  }
+  .badge-medio {
+    @apply bg-amber-500/20 text-amber-500 border border-amber-500/50;
+  }
+  .badge-nulo {
+    @apply bg-muted/20 text-muted-foreground border border-muted/50;
   }
 }
