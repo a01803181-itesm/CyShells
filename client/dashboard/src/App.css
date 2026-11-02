@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -90,22 +90,20 @@
   }
 }
 
-@layer utilities {
-  .glass-panel {
-    @apply bg-background/60 backdrop-blur-xl border border-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.05)];
-  }
-  
-  .glass-panel-hover {
-    @apply hover:bg-background/80 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all duration-300;
-  }
+@utility glass-panel {
+  @apply bg-background/60 backdrop-blur-xl border border-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.05)];
+}
 
-  .text-glow {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
-  }
+@utility glass-panel-hover {
+  @apply hover:bg-background/80 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all duration-300;
+}
+
+@utility text-glow {
+  text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+}
   
-  .border-glow {
-    box-shadow: inset 0 0 15px hsl(var(--primary) / 0.2), 0 0 15px hsl(var(--primary) / 0.2);
-  }
+@utility border-glow {
+  box-shadow: inset 0 0 15px hsl(var(--primary) / 0.2), 0 0 15px hsl(var(--primary) / 0.2);
 }
 
 @layer components {
@@ -126,7 +124,7 @@
   }
 
   .app-bottom-bar {
-    @apply md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-b-0 rounded-t-xl z-50 px-2 pb-safe;
+    @apply md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-b-0 rounded-t-xl z-50 px-2 pb-[env(safe-area-inset-bottom)];
   }
 
   .hide-on-mobile {
@@ -135,5 +133,92 @@
 
   .sidebar-text {
     @apply hidden lg:block font-medium;
+  }
+
+  .kpi-grid {
+    @apply flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:pb-0;
+
+    @apply md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible;
+
+    scrollbar-width: none;
+  }
+  
+  .kpi-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kpi-card {
+    @apply flex-none w-[75vw] sm:w-[45vw] md:w-auto snap-center;
+
+    @apply glass-panel rounded-xl p-5 flex flex-col justify-between h-32 relative overflow-hidden transition-all hover:bg-background/80 hover:border-primary/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.1)];
+  }
+
+  .kpi-indicator {
+    @apply h-1 w-4 rounded-full mb-4 shadow-[0_0_8px_currentColor];
+  }
+
+  .kpi-title {
+    @apply text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-1;
+  }
+
+  .kpi-value {
+    @apply text-2xl font-bold text-foreground font-mono text-glow;
+  }
+
+  .kpi-subtext {
+    @apply text-xs text-muted-foreground mt-1;
+  }
+
+  .chart-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8;
+  }
+
+  .chart-card {
+    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-[350px] md:h-[400px];
+  }
+
+  .section-header {
+    @apply flex items-center mb-6;
+  }
+
+  .section-header-title {
+    @apply text-xs font-mono tracking-widest text-muted-foreground uppercase mr-4;
+  }
+
+  .section-header-line {
+    @apply flex-1 h-px bg-border/50;
+  }
+
+  .metadata-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8;
+  }
+
+  .metadata-card {
+    @apply glass-panel rounded-xl p-4 md:p-6 flex flex-col h-[300px];
+  }
+
+  .metadata-list {
+    @apply flex-1 overflow-y-auto pr-2 -mr-2 mt-4 space-y-1;
+    scrollbar-width: none;
+  }
+  
+  .metadata-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .metadata-item {
+    @apply flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-primary/20;
+  }
+
+  .metadata-item-index {
+    @apply text-xs font-mono text-muted-foreground w-6;
+  }
+
+  .metadata-item-name {
+    @apply flex-1 text-sm font-medium text-foreground truncate pl-2;
+  }
+
+  .metadata-item-count {
+    @apply text-xs font-mono text-primary text-glow bg-primary/10 px-2 py-1 rounded-md;
   }
 }
