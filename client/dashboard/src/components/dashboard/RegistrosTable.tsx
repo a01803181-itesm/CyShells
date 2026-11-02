@@ -93,7 +93,7 @@ export function RegistrosTable() {
         </div>
 
         {/* Data Table */}
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="data-table">
             <thead>
               <tr>

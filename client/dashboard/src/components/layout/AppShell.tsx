@@ -62,7 +62,7 @@ export default function AppShell({ children, pageTitle = "Visión General" }: { 
       <div className="app-main">
         {/* TOPBAR */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 glass-panel border-b-0 z-10">
-          <h1 className="text-xl md:text-2xl font-mono text-primary text-glow font-semibold tracking-tight">
+          <h1 className="text-lg md:text-xl font-mono text-primary tracking-wide">
             {pageTitle}
           </h1>
 

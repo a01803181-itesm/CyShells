@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './App.css'
 import { ThemeProvider } from './components/theme-provider'
 import Dashboard from './pages/Dashboard'
 import IctAnalysis from './pages/IctAnalysis'

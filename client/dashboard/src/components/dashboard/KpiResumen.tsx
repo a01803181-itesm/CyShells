@@ -58,22 +58,18 @@ export function KpiResumen() {
       <div className="kpi-grid">
         {KPI_DATA.map((kpi) => (
           <div key={kpi.id} className="kpi-card group">
+            <h3 className="kpi-title">{kpi.title}</h3>
+            
             <div className={`kpi-indicator ${kpi.indicatorColor}`} />
             
-            <div>
-              <h3 className="kpi-title">{kpi.title}</h3>
-              <div className="flex items-end gap-2">
-                <span className="kpi-value group-hover:scale-105 transition-transform origin-left">
-                  {kpi.value}
-                </span>
+            <div className="mt-auto">
+              <div className="kpi-value group-hover:scale-105 transition-transform origin-left">
+                {kpi.value}
               </div>
               <p className="kpi-subtext">{kpi.subtext}</p>
             </div>
             
-            <div 
-              className={`absolute -right-4 -bottom-4 w-16 h-16 rounded-full blur-2xl opacity-10 ${kpi.indicatorColor}`} 
-              aria-hidden="true" 
-            />
+            <div className={`absolute -right-4 -bottom-4 w-16 h-16 rounded-full blur-2xl opacity-10 ${kpi.indicatorColor}`} aria-hidden="true" />
           </div>
         ))}
       </div>
