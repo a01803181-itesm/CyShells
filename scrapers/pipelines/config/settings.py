@@ -8,6 +8,12 @@ class Settings(BaseSettings):
     MONGO_DB_HOST: str = Field(default='localhost')
     MONGO_DB_PORT: str = Field(default='27017')
 
+    MINIO_ENDPOINT: str = Field(default='http://localhost:9000')
+    MINIO_ACCESS_KEY: str = Field(default='admin')
+    MINIO_SECRET_KEY: str = Field(default='password123')
+
+    MINIO_BUCKET_NAME: str = Field(default='cyshells-media')
+
     @property
     def mongo_db_uri(self) -> str:
         return f'mongodb://{self.MONGO_DB_HOST}:{self.MONGO_DB_PORT}'
