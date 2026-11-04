@@ -33,6 +33,14 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Description: "Returns the most frequently used hashtags and emojis.",
 		Tags: []string{"Dashboard", "Charts", "GET", "Top"},
 	}, handlers.GetTopMetadata(db))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-dashboard-kpis",
+		Method: http.MethodGet,
+		Path: "/api/v1/dashboard/kpis",
+		Description: "Returns the KPIs for the dashboard Home section",
+		Tags: []string{"Dashboard", "KPIs", "GET", "Top"},
+	}, handlers.GetDashboardKPIs(db))
 }
 
 func main() {
