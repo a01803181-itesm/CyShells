@@ -7,7 +7,8 @@ import torch
 import urllib3
 from ultralytics import YOLO
 
-from utils.logger import logger
+from models.ict import Omega
+from utils.logger import logger, SUCCESS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -36,11 +37,14 @@ class OmegaFilter:
         except Exception as e:
             logger.error(f"Fetch Error: {e}")
 
-    def analyze_and_save(self, img_url: str, video_id: str, username: str, output_dir: str = "./temp_analyzed") -> dict:
+    def analyse_and_save(self, img_url: str, video_id: str, username: str, output_dir: str = "./temp_analysed") -> Omega:
         """
         Processes the image, draws bounding boxes, saves it locally,
         and returns the threat analysis telemetry.
         """
+
+        logger.info(f"Initiating Omega Computer Vision analysis for tiktok @{username}/{video_id}...")
+
         img = self._fetch_image(img_url)
         if img is None:
             raise ValueError(f"Failed to fetch or decode image from {img_url}")
@@ -65,32 +69,33 @@ class OmegaFilter:
                         risks_detected[category].add(class_name)
 
         if count_categories >= 2:
-            risk_level = "ALTO"
+            threat_level = "ALTO"
         elif count_categories == 1:
-            risk_level = "MEDIO"
+            threat_level = "MEDIO"
         else:
-            risk_level = "NULO"
+            threat_level = "NULO"
 
         os.makedirs(output_dir, exist_ok=True)
 
-        filename = f"omega_{username}_{video_id}_{risk_level.lower()}.jpg"
+        filename = f"omega_{username}_{video_id}_{threat_level.lower()}.jpg"
         local_filepath = os.path.join(output_dir, filename)
 
         cv2.imwrite(local_filepath, processed_image)
 
         risks_details = {k: list(v) for k, v in risks_detected.items()}
 
-        return {
-            "status": "success",
-            "level": risk_level,
-            "details": risks_details,
-            "local_path": local_filepath,
-            "filename": filename,
-        }
+        logger.log(SUCCESS, f"Computer Vision analysis succeed. Threat level identified: {threat_level}")
+
+        return Omega(
+            threat_level=threat_level,
+            risks_details=risks_details,
+            path=local_filepath,
+            filename=filename,
+        )
 
 if __name__ == "__main__":
     omega = OmegaFilter()
-    results = omega.analyze_and_save(
+    results = omega.analyse_and_save(
         img_url="https://p16-common-sign.tiktokcdn.com/tos-alisg-p-0037/okRQEBAFoQS8FRYgBpEpItQHQY9GDfeBU48qaI~tplv-tiktokx-shrink_ep:640:640:q78.webp?dr=1346&refresh_token=bd0308c5&x-expires=1793851200&x-signature=LIzmt2XDdPgCqWKoO%2BbyG2eQhN0%3D&t=bacd0480&ps=933b5bde&shp=d05b14bd&shcp=1a816805&idc=sg1&bas=android_bas&biz_tag=tt_video&s=FEED&sc=cover",
         video_id="7684402906094669074",
         username="trakatra_ng",

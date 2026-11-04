@@ -3,6 +3,8 @@ from enum import Enum
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
 
+from models.ict import Omega
+
 class Platform(Enum):
     TIKTOK = "tiktok"
 
@@ -30,3 +32,4 @@ class Tiktok(BaseModel):
     hashtags: List[str] = Field(default=[])
     emojis: List[str] = Field(default=[])
     scraped_at: datetime = Field(default=datetime.now(UTC))
+    omega_analysis: Optional[Omega] = Field(default=None)

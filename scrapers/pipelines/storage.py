@@ -1,7 +1,7 @@
 import boto3
 from botocore.client import Config, BaseClient
 from botocore.exceptions import ClientError
-from config.settings import Settings, get_settings
+from pipelines.config.settings import Settings, get_settings
 from typing import Any, Optional
 
 from utils.logger import logger, SUCCESS
@@ -11,6 +11,7 @@ s3_client: BaseClient
 settings: Optional[Settings] = None
 
 def init_s3() -> Any:
+    global settings
     settings = get_settings()
 
     return boto3.client(

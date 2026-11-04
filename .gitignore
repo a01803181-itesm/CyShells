@@ -10,3 +10,5 @@ build/
 dist/
 __pycache__/
 *.pyc
+*.pt
+*temp_analysed/
