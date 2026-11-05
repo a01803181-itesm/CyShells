@@ -1,20 +1,32 @@
 package models
 
-type SummaryAccountItem struct {
-	AccountID     string   `json:"account_id" bson:"_id"`
-	Username      string   `json:"username" bson:"username"`
-	RiskLevel     string   `json:"risk_level" bson:"risk_level"`
-	Followers     int      `json:"followers" bson:"followers"`
-	Following     int      `json:"following" bson:"following"`
-	TotalPosts    int      `json:"total_posts" bson:"total_posts"`
-	TotalComments int      `json:"total_comments" bson:"total_comments"`
-	TopHashtags   []string `json:"top_hashtags" bson:"top_hashtags"`
-	TopEmojis     []string `json:"top_emojis" bson:"top_emojis"`
-	TopMusic      []string `json:"top_music" bson:"top_music"`
+import "time"
+
+type TableRow struct {
+	VideoID     string    `json:"video_id"`
+	Username    string    `json:"username"`
+	AvatarURL   string    `json:"avatarUrl"`
+	Description string    `json:"description"`
+	Plays       int       `json:"plays"`
+	Likes       int       `json:"likes"`
+	RiskLevel   string    `json:"risk_level"`
+	ScrapedAt   time.Time `json:"scraped_at"`
 }
 
-type SummaryTableResponse struct {
-	Body struct {
-		Items []SummaryAccountItem `json:"items"`
-	}
+type TableResponse struct {
+	Total int64      `json:"total"`
+	Page  int        `json:"page"`
+	Limit int        `json:"limit"`
+	Data  []TableRow `json:"data"`
+}
+
+type TableInput struct {
+	Page   int    `query:"page" default:"1" minimum:"1" doc:"Page number"`
+	Limit  int    `query:"limit" default:"10" minimum:"1" maximum:"100" doc:"Items per page"`
+	Search string `query:"search" required:"false" doc:"Search by username or description"`
+	Risk   string `query:"risk" required:"false" doc:"Filter by Omega risk level (ALTO, MEDIO, NULO)"`
+}
+
+type TableOutput struct {
+	Body TableResponse
 }

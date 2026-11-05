@@ -31,6 +31,14 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Description: "Returns the Charts data for the dashboard Home section",
 		Tags: []string{"Dashboard", "Charts", "GET"},
 	}, handlers.GetDashboardCharts(db))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-dashboard-table",
+		Method: http.MethodGet,
+		Path: "/api/v1/dashboard/table",
+		Description: "Return the Table data for the dashboard Home section",
+		Tags: []string{"Dashboard", "Table", "GET"},
+	}, handlers.GetDashboardTable(db))
 }
 
 func main() {
