@@ -21,7 +21,7 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Method: http.MethodGet,
 		Path: "/api/v1/dashboard/kpis",
 		Description: "Returns the KPIs for the dashboard Home section",
-		Tags: []string{"Dashboard", "KPIs", "GET", "Top"},
+		Tags: []string{"Dashboard", "KPIs", "Metadata", "GET", "Top"},
 	}, handlers.GetDashboardKPIs(db))
 
 	huma.Register(api, huma.Operation{
@@ -29,7 +29,7 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Method: http.MethodGet,
 		Path: "/api/v1/dashboard/charts",
 		Description: "Returns the Charts data for the dashboard Home section",
-		Tags: []string{"Dashboard", "Charts", "GET"},
+		Tags: []string{"Dashboard", "Charts", "Metadata", "GET"},
 	}, handlers.GetDashboardCharts(db))
 
 	huma.Register(api, huma.Operation{
@@ -37,8 +37,16 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Method: http.MethodGet,
 		Path: "/api/v1/dashboard/table",
 		Description: "Return the Table data for the dashboard Home section",
-		Tags: []string{"Dashboard", "Table", "GET"},
+		Tags: []string{"Dashboard", "Table", "Metadata", "GET"},
 	}, handlers.GetDashboardTable(db))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-omega-gallery-images",
+		Method: http.MethodGet,
+		Path: "/api/v1/ict/omega/gallery",
+		Description: "Return a paginated list of public URIs of the Omega computer vision images",
+		Tags: []string{"ICT", "Omega", "Images", "GET"},
+	}, handlers.GetOmegaImages(db))
 }
 
 func main() {
