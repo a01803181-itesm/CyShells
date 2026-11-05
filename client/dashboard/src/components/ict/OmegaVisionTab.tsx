@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Maximize2 } from "lucide-react";
+import { Loader2, Maximize2 } from "lucide-react";
+import { getOmegaGalleryImages, type GalleryCard } from "@/lib/api";
 
 const VISION_METRICS = [
   { label: "Armas Largas", count: 184 },
@@ -31,10 +32,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function OmegaVisionTab() {
   const [filter, setFilter] = useState("TODOS");
+  const [gallery, setGallery] = useState<GalleryCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const json = await getOmegaGalleryImages();
+        setGallery(json.data || []);
+        console.log("JSON data", json.data);
+      } catch (error) {
+        console.error("Failed to fetch Omega analysis images", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, []);
 
   const filteredGallery = filter === "TODOS" 
-    ? GALLERY_DATA 
-    : GALLERY_DATA.filter(item => item.risk === filter);
+    ? gallery 
+    : gallery.filter(item => item.risk === filter);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8">
@@ -79,44 +98,53 @@ export function OmegaVisionTab() {
           </select>
         </div>
 
-        <div className="gallery-grid">
-          {filteredGallery.map((target) => (
-            <div key={target.id} className="gallery-card group">
-              <div className="gallery-image-wrapper">
-                <img src={target.image} alt="Objetivo" className="gallery-image" />
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <span className={`badge ${target.risk === "ALTO" ? "badge-alto text-glow" : "badge-medio"}`}>
-                    {target.risk}
-                  </span>
-                </div>
-                <button className="absolute bottom-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 hover:border-primary/50 text-white">
-                  <Maximize2 className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="p-4 flex flex-col flex-1">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <p className="text-xs font-mono text-muted-foreground uppercase mb-1">Usuario</p>
-                    <p className="text-sm font-medium text-primary hover:underline cursor-pointer">{target.user}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-mono text-muted-foreground uppercase mb-1">Video ID</p>
-                    <p className="text-[10px] font-mono text-foreground">{target.id}</p>
-                  </div>
-                </div>
-                <div className="mt-auto pt-3 border-t border-primary/10">
-                  <div className="flex flex-wrap gap-1.5">
-                    {target.labels.map((label, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded text-[10px] font-mono text-primary">
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+        {
+          isLoading ? (
+            <div className="flex items-center justify-center h-48 glass-panel rounded-xl">
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="gallery-grid">
+              {filteredGallery.map((target) => (
+                <div key={target.id} className="gallery-card group">
+                  <div className="gallery-image-wrapper">
+                    <img src={target.image} alt="Objetivo" className="gallery-image" />
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <span className={`badge ${target.risk === "ALTO" ? "badge-alto text-glow" : "badge-medio"}`}>
+                        {target.risk}
+                      </span>
+                    </div>
+                    <button className="absolute bottom-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 hover:border-primary/50 text-white">
+                      <Maximize2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="text-xs font-mono text-muted-foreground uppercase mb-1">Usuario</p>
+                        <p className="text-sm font-medium text-primary hover:underline cursor-pointer">{target.user}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-mono text-muted-foreground uppercase mb-1">Video ID</p>
+                        <p className="text-[10px] font-mono text-foreground">{target.id}</p>
+                      </div>
+                    </div>
+                    <div className="mt-auto pt-3 border-t border-primary/10">
+                      <div className="flex flex-wrap gap-1.5">
+                        {target.labels != null && target.labels.length > 0 ? target.labels.map((label, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded text-[10px] font-mono text-primary">
+                            {label}
+                          </span>
+                        )) : ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        }
+
       </div>
     </div>
   );
