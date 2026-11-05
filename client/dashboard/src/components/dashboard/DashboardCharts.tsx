@@ -1,3 +1,6 @@
+import { type Account, type Charts, getCharts } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -33,6 +36,21 @@ const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
 };
 
 export function DashboardCharts() {
+  const { data: charts, isLoading } = useQuery<Charts>({
+    queryKey: ["dashboardCharts"],
+    queryFn: getCharts,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-24">
+        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+      </div>
+    );
+  } else {
+    console.log({ charts });
+  }
+
   return (
     <div className="w-full">
       {/* Section Header */}
@@ -51,27 +69,27 @@ export function DashboardCharts() {
           </h3>
           <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={CHART_DATA} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+              <BarChart data={charts?.top_accounts} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="opacity-10" vertical={false} />
                 <XAxis 
-                  dataKey="username" 
+                  dataKey="name"
                   stroke="currentColor" 
                   className="text-xs opacity-50 font-mono"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(val) => val.substring(0, 8) + '...'} // Truncate long usernames
+                  tickFormatter={(name) => name.substring(0, 8) + '...'}
                 />
                 <YAxis 
                   stroke="currentColor" 
                   className="text-xs opacity-50 font-mono"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} // Format as 450k
+                  tickFormatter={(followers) => `${(followers / 1000).toFixed(0)}k`}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--primary) / 0.05)' }} />
                 <Bar dataKey="followers" radius={[4, 4, 0, 0]}>
-                  {CHART_DATA.map((_, index) => (
-                    <Cell key={`cell-${index}`} className="fill-primary hover:fill-primary/80 transition-colors" />
+                  {charts?.top_accounts?.map((account: Account) => (
+                    <Cell key={`cell-${account.name}`} className="fill-primary hover:fill-primary/80 transition-colors" />
                   ))}
                 </Bar>
               </BarChart>

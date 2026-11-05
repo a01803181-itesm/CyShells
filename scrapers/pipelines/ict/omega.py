@@ -8,7 +8,7 @@ import urllib3
 from ultralytics import YOLO
 
 from models.ict import Omega
-from utils.logger import logger, SUCCESS
+from utils.logger import logger
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -42,8 +42,6 @@ class OmegaFilter:
         Processes the image, draws bounding boxes, saves it locally,
         and returns the threat analysis telemetry.
         """
-
-        logger.info(f"Initiating Omega Computer Vision analysis for tiktok @{username}/{video_id}...")
 
         img = self._fetch_image(img_url)
         if img is None:
@@ -83,8 +81,6 @@ class OmegaFilter:
         cv2.imwrite(local_filepath, processed_image)
 
         risks_details = {k: list(v) for k, v in risks_detected.items()}
-
-        logger.log(SUCCESS, f"Computer Vision analysis succeed. Threat level identified: {threat_level}")
 
         return Omega(
             threat_level=threat_level,

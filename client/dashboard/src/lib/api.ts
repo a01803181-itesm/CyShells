@@ -6,7 +6,7 @@ export interface KPI {
     indicatorColour: string;
 };
 
-export async function getKPIs(): Promise<KPI> {
+export async function getKPIs(): Promise<KPI[]> {
     const response = await fetch("/api/v1/dashboard/kpis");
     if (!response.ok) {
         throw new Error("Failed at fetching KPIs from server");
@@ -25,8 +25,8 @@ export interface Hashtag {
 };
 
 export interface Charts {
-    topAccounts: Account[];
-    topHashtags: Hashtag[];
+    top_accounts: Account[];
+    top_hashtags: Hashtag[];
 };
 
 export async function getCharts(): Promise<Charts> {
@@ -52,7 +52,10 @@ export interface TableData {
     data: TableRow[];
 };
 
-export async function getTableRows(): Promise<TableData> {
+export async function getTableRows({ page = 1, limit = 10, risk = "", search = ""}): Promise<TableData> {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (risk) params.append("risk", risk);
+    if (search) params.append("search", search);
     const response = await fetch("/api/v1/dashboard/table");
     if (!response.ok) {
         throw new Error("Failed to fetch Table data from server");
@@ -68,14 +71,13 @@ export interface GalleryCard {
     image: string;
 };
 
-export interface OmegaImages {
-    data: GalleryCard[];
-};
-
-export async function getOmegaGalleryImages(): Promise<OmegaImages> {
-    const response = await fetch("/api/v1/ict/omega/gallery");
+export async function getOmegaGalleryImages(risk: string): Promise<GalleryCard[]> {
+    const params = new URLSearchParams();
+    if (risk) params.append("risk", risk);
+    const response = await fetch(`/api/v1/ict/omega/gallery?${params.toString()}`);
     if (!response.ok) {
         throw new Error("Failed to fetch Omega gallery images from server");
     }
-    return response.json();
+    const json = await response.json();
+    return json.data || [];
 }

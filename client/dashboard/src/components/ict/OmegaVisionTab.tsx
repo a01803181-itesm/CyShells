@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Loader2, Maximize2 } from "lucide-react";
 import { getOmegaGalleryImages, type GalleryCard } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 const VISION_METRICS = [
   { label: "Armas Largas", count: 184 },
@@ -32,28 +33,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function OmegaVisionTab() {
   const [filter, setFilter] = useState("TODOS");
-  const [gallery, setGallery] = useState<GalleryCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        const json = await getOmegaGalleryImages();
-        setGallery(json.data || []);
-        console.log("JSON data", json.data);
-      } catch (error) {
-        console.error("Failed to fetch Omega analysis images", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: gallery = [], isLoading, isError } = useQuery<GalleryCard[]>({
+    queryKey: ["omegaGallery", filter],
+    queryFn: () => getOmegaGalleryImages(filter),
+  });
 
-    fetchGallery();
-  }, []);
-
-  const filteredGallery = filter === "TODOS" 
-    ? gallery 
-    : gallery.filter(item => item.risk === filter);
+  if (isError) {
+    return <div className="text-red-500 font-mono text-xs">Error de red al cargar la galería táctica.</div>;
+  }
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8">
@@ -105,7 +93,7 @@ export function OmegaVisionTab() {
             </div>
           ) : (
             <div className="gallery-grid">
-              {filteredGallery.map((target) => (
+              {gallery.map((target: GalleryCard) => (
                 <div key={target.id} className="gallery-card group">
                   <div className="gallery-image-wrapper">
                     <img src={target.image} alt="Objetivo" className="gallery-image" />
@@ -144,7 +132,6 @@ export function OmegaVisionTab() {
             </div>
           )
         }
-
       </div>
     </div>
   );

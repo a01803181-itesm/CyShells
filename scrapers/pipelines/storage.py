@@ -58,8 +58,6 @@ def init_s3() -> Any:
     return client
 
 def upload_media(s3_client: BaseClient, file_path: str, object_name: str) -> Optional[str]:
-    logger.info(f"Inserting media file {object_name} into MinIO...")
-    
     try:
         s3_client.upload_file(
             Filename=file_path,
@@ -69,8 +67,6 @@ def upload_media(s3_client: BaseClient, file_path: str, object_name: str) -> Opt
         )
 
         public_uri = f"{settings.MINIO_ENDPOINT}/{settings.MINIO_BUCKET_NAME}/{object_name}"
-
-        logger.log(SUCCESS, f"Media file successfuly stored in MinIO instance. Public URI: {public_uri}")
 
         return public_uri
     except ClientError as e:

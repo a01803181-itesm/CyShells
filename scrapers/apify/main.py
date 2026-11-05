@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import Optional, List
 
 from models.ict import Omega
 from models.tiktok import Tiktok
@@ -16,34 +16,49 @@ omega_filter = OmegaFilter()
 async def main():
     logger.info("Initialising CyShells Apify Scraper Agent...")
 
-    tiktok: Optional[Tiktok] = await scrape_tiktok_fyp()
+    tiktoks: List[Tiktok] = await scrape_tiktok_fyp(items=3)
 
-    if not tiktok: return
+    if not tiktoks: return
 
-    if tiktok:
-        logger.log(SUCCESS, f"Apify data successfully mapped to Tiktok Pydantic Model")
-
+    if tiktoks:
         omega = OmegaFilter()
 
-        analysis: Omega = await asyncio.to_thread(
-            omega.analyse_and_save,
-            img_url=str(tiktok.cover_url),
-            video_id=tiktok.id,
-            username=tiktok.user.username
-        )
+        for i, tiktok in enumerate(tiktoks):
+            logger.info(f"Analysing tiktok {i}/{len(tiktoks)}. URL: https://www.tiktok.com/@{tiktok.user.username}/video/{tiktok.id}")
 
-        public_uri: Optional[str] = upload_media(
-            s3_client=s3_client,
-            file_path=analysis.path,
-            object_name=analysis.filename,
-        )
+            analysis: Omega = await asyncio.to_thread(
+                omega.analyse_and_save,
+                img_url=str(tiktok.cover_url),
+                video_id=tiktok.id,
+                username=tiktok.user.username
+            )
 
-        if not public_uri: return
+            logger.log(SUCCESS, f"Computer Vision analysis succeed. Threat level identified: {analysis.threat_level}")
 
-        analysis.public_uri = public_uri
-        tiktok.omega_analysis = analysis
+            logger.info(f"Inserting Omega analysis image file into MinIO...")
 
-        await save_tiktok(tiktok)
+            public_uri: Optional[str] = upload_media(
+                s3_client=s3_client,
+                file_path=analysis.path,
+                object_name=analysis.filename,
+            )
+
+            if not public_uri: return
+
+            logger.log(SUCCESS, f"Media file successfuly stored in MinIO instance. Public URI: {public_uri}")
+
+            analysis.public_uri = public_uri
+            tiktok.omega_analysis = analysis
+
+            logger.info(f"Saving tiktok into MongoDB at 'tiktoks'...")
+
+            inserted_id = await save_tiktok(tiktok)
+
+            if not inserted_id: return
+
+            logger.log(SUCCESS, f"Tiktok {tiktok.id} saved to MongoDB (Object ID: {inserted_id})")
+
+        logger.log(SUCCESS, f"CyShells Intelligence pipeline terminated successfully")
     else:
         logger.error("Failed to extract or validate the listing data from Apify")
 

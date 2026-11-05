@@ -21,21 +21,17 @@ def get_db() -> AsyncIOMotorDatabase:
 
     return _mongo_client["cyshells"]
 
-async def save_tiktok(tiktok: Tiktok) -> bool:
+async def save_tiktok(tiktok: Tiktok) -> Optional[str]:
     db: AsyncIOMotorDatabase = get_db()
 
     collection = db["tiktoks"]
-
-    logger.info(f"Saving tiktok into MongoDB at 'tiktoks'...")
 
     try:
         document: AsyncIOMotorCollection = tiktok.model_dump(mode='json')
 
         result = await collection.insert_one(document)
 
-        logger.log(SUCCESS, f"Tiktok {tiktok.id} saved to MongoDB (Object ID: {result.inserted_id})")
-
-        return True
+        return result.inserted_id
     except Exception as e:
         logger.error(f"Failed to save tiktok to MongoDB: {e}")
-        return False
+        return None

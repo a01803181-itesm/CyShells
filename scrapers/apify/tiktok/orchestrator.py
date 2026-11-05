@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 from pydantic import HttpUrl
-from typing import Optional
+from typing import List
 
 from apify_client import ApifyClientAsync
 
@@ -9,7 +9,7 @@ from config.settings import get_settings
 from utils.logger import logger, SUCCESS
 from tiktok.parser import ApifyTiktokFYPParser
 
-async def scrape_tiktok_fyp() -> Optional[Tiktok]:
+async def scrape_tiktok_fyp(items: int) -> List[Tiktok]:
     settings = get_settings()
 
     if not settings.APIFY_API_TOKEN:
@@ -22,7 +22,7 @@ async def scrape_tiktok_fyp() -> Optional[Tiktok]:
     client = ApifyClientAsync(settings.APIFY_API_TOKEN)
 
     run_input = {
-        'maxItems': 1,
+        'maxItems': items,
         'proxyConfiguration': {
             'useApifyProxy': True,
             'apifyProxyGroups': [
@@ -50,27 +50,38 @@ async def scrape_tiktok_fyp() -> Optional[Tiktok]:
 
         logger.log(SUCCESS, f"Apify Actor return {len(items.items)} results!!")
 
-        payload = items.items[0]
-        parser = ApifyTiktokFYPParser(payload)
+        tiktoks: List[Tiktok] = []
 
-        url = parser.url if parser.url else HttpUrl("https://www.tiktok.com")
-        plays_count, diggs_count, comments_count, shared_count = parser.stats
+        scraped_at = datetime.now(UTC)
 
-        return Tiktok(
-            id=parser.id,
-            url=url,
-            user=parser.user,
-            description=parser.description,
-            created=parser.creation_datetime,
-            cover_url=parser.cover,
-            plays_count=plays_count,
-            diggs_count=diggs_count,
-            comments_count=comments_count,
-            shared_count=shared_count,
-            hashtags=parser.hashtags,
-            emojis=parser.emojis,
-            scraped_at=datetime.now(UTC)
-        )
+        for i, item in enumerate(items.items):
+            logger.info(f"Normalising tiktok {i}/{len(items.items)} into the Pydantic Model...")
+
+            parser = ApifyTiktokFYPParser(item)
+
+            url = parser.url if parser.url else HttpUrl("https://www.tiktok.com")
+            plays_count, diggs_count, comments_count, shared_count = parser.stats
+
+            tiktok = Tiktok(
+                id=parser.id,
+                url=url,
+                user=parser.user,
+                description=parser.description,
+                created=parser.creation_datetime,
+                cover_url=parser.cover,
+                plays_count=plays_count,
+                diggs_count=diggs_count,
+                comments_count=comments_count,
+                shared_count=shared_count,
+                hashtags=parser.hashtags,
+                emojis=parser.emojis,
+                scraped_at=scraped_at
+            )
+
+            tiktoks.append(tiktok)
+
+            logger.log(SUCCESS, "Tiktok successfully parsed into the Pydantic Model")
+        return tiktoks
     except Exception as e:
         logger.error(f"Apify Actor execution failed: {e}")
-        return None
+        return []
