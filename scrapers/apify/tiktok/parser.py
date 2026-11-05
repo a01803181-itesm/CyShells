@@ -1,6 +1,9 @@
 from datetime import datetime, timezone, UTC
+import re
+from typing import Dict, Any, Optional, Tuple, List, Set
+
+import emoji
 from pydantic import HttpUrl
-from typing import Dict, Any, Optional, Tuple, List
 
 from models.tiktok import TiktokUser
 
@@ -63,11 +66,29 @@ class ApifyTiktokFYPParser:
 
     @property
     def hashtags(self) -> List[str]:
-        return self.__payload.get("hashtags", [])
+        desc = self.description
+        if not desc: return []
+
+        extracted: List[str] = re.findall(r"#\w+", desc)
+        return list(set([tag.lower() for tag in extracted]))
 
     @property
     def emojis(self) -> List[str]:
-        return self.__payload.get("emojis", [])
+        author_data: Dict[str, Any] = self.__payload.get("author", {})
+        texts_to_scan = [
+            self.description,
+            author_data.get("nickname"),
+            author_data.get("signature")
+        ]
+
+        extracted_emojis: Set[str] = set()
+        for text in texts_to_scan:
+            if text:
+                for char in text:
+                    if emoji.is_emoji(char):
+                        extracted_emojis.add(char)
+
+        return list(extracted_emojis)
 
     @property
     def cover(self) -> Optional[HttpUrl]:

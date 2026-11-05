@@ -29,8 +29,16 @@ func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 		Method: http.MethodGet,
 		Path: "/api/v1/dashboard/charts",
 		Description: "Returns the Charts data for the dashboard Home section",
-		Tags: []string{"Dashboard", "Charts", "Metadata", "GET"},
+		Tags: []string{"Dashboard", "Charts", "GET"},
 	}, handlers.GetDashboardCharts(db))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-dashboard-metadata",
+		Method: http.MethodGet,
+		Path: "/api/v1/dashboard/metadata",
+		Description: "Returns the Metadata for the dashboard Home section",
+		Tags: []string{"Dashboard", "Metadata", "GET"},
+	}, handlers.GetDashboardMetadata(db))
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-dashboard-table",

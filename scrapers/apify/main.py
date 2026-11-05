@@ -23,7 +23,7 @@ async def main():
     if tiktoks:
         omega = OmegaFilter()
 
-        for i, tiktok in enumerate(tiktoks):
+        for i, tiktok in enumerate(tiktoks, 1):
             logger.info(f"Analysing tiktok {i}/{len(tiktoks)}. URL: https://www.tiktok.com/@{tiktok.user.username}/video/{tiktok.id}")
 
             analysis: Omega = await asyncio.to_thread(

@@ -53,7 +53,8 @@ class TestApifyTikTokFYPParser(unittest.TestCase):
         self.assertIsNone(self.parser.description)
         self.assertEqual(self.parser.creation_datetime, datetime(2026, 10, 12, 1, 1, 56, tzinfo=timezone.utc))
         self.assertEqual(len(self.parser.hashtags), 0)
-        self.assertEqual(len(self.parser.emojis), 0)
+        self.assertEqual(len(self.parser.emojis), 3)
+        self.assertEqual(set(self.parser.emojis), set(["😎","😈","💯"]))
 
     def test_cover(self):
         self.assertEqual(self.parser.cover, HttpUrl("https://p16-common-sign.tiktokcdn.com/tos-useast5-p-0068-tx/oo8VhUjfI8MmeMJQdMWLFQhYHKSIQACxG9GkfA~tplv-tiktokx-shrink_ep:640:640:q78.webp?dr=1346&refresh_token=a5ebb341&x-expires=1793599200&x-signature=mlrpKqUchllHBaO2ZEsYN6H7jLk%3D&t=bacd0480&ps=933b5bde&shp=d05b14bd&shcp=1a816805&idc=my&biz_tag=tt_video&s=FEED&sc=cover&bas=android_bas"))

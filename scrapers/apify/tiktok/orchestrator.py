@@ -54,7 +54,7 @@ async def scrape_tiktok_fyp(items: int) -> List[Tiktok]:
 
         scraped_at = datetime.now(UTC)
 
-        for i, item in enumerate(items.items):
+        for i, item in enumerate(items.items, 1):
             logger.info(f"Normalising tiktok {i}/{len(items.items)} into the Pydantic Model...")
 
             parser = ApifyTiktokFYPParser(item)

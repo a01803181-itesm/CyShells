@@ -1,29 +1,6 @@
-import { Info } from "lucide-react";
-
-const METADATA = {
-  hashtags: [
-    { name: "#cartel", count: 432 },
-    { name: "#belico", count: 310 },
-    { name: "#4L", count: 289 },
-    { name: "#jalo", count: 245 },
-    { name: "#sinaloa", count: 198 },
-    { name: "#alucin", count: 187 },
-    { name: "#plaza", count: 156 },
-    { name: "#reclutamiento", count: 142 },
-    { name: "#empresa", count: 120 },
-    { name: "#jefe", count: 98 },
-  ],
-  emojis: [
-    { name: "🍕", count: 289 },
-    { name: "🐓", count: 150 },
-    { name: "🔥", count: 145 },
-    { name: "🧿", count: 132 },
-    { name: "🤠", count: 110 },
-    { name: "🍅", count: 95 },
-    { name: "😈", count: 88 },
-  ],
-  music: [], // TODO
-};
+import { getTopMetadata } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { Info, Loader2 } from "lucide-react";
 
 function MetadataList({ items, emptyMessage }: { items: { name: string; count: number }[], emptyMessage: string }) {
   if (items.length === 0) {
@@ -52,6 +29,19 @@ function MetadataList({ items, emptyMessage }: { items: { name: string; count: n
 }
 
 export function TopMetadata() {
+  const { data: metadata, isLoading } = useQuery({
+    queryKey: ["topMetadata"],
+    queryFn: getTopMetadata,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-48 w-full">
+        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <div className="metadata-grid">
@@ -64,7 +54,7 @@ export function TopMetadata() {
             </h3>
             <Info className="h-4 w-4 text-muted-foreground/50" />
           </div>
-          <MetadataList items={METADATA.hashtags} emptyMessage="Sin datos de hashtags" />
+          <MetadataList items={metadata?.topHashtags || []} emptyMessage="Sin datos de hashtags" />
         </div>
 
         {/* Emojis Card */}
@@ -74,7 +64,7 @@ export function TopMetadata() {
               Emojis más Usados
             </h3>
           </div>
-          <MetadataList items={METADATA.emojis} emptyMessage="Sin datos de emojis" />
+          <MetadataList items={metadata?.topEmojis || []} emptyMessage="Sin datos de emojis" />
         </div>
 
         {/* Music Card */}
@@ -84,7 +74,7 @@ export function TopMetadata() {
               Música más Usada
             </h3>
           </div>
-          <MetadataList items={METADATA.music} emptyMessage="Módulo en desarrollo" />
+          <MetadataList items={[]} emptyMessage="Módulo en desarrollo" />
         </div>
 
         {/* Comments Card */}

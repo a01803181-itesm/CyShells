@@ -1,184 +1,198 @@
-import React, { useState } from "react";
-import { Search, ChevronDown, ChevronUp, Database } from "lucide-react";
-
-const TABLE_DATA = [
-  {
-    id: "7123456789",
-    username: "@.ardilla76",
-    risk: "ALTO",
-    followers: 450000,
-    posts: 120,
-    comments: 4500,
-    hashtags: ["#cartel", "#plaza", "#4L"],
-    emojis: ["🧿", "🍅", "🍕"],
-    music: ["Desconocido"],
-  },
-  {
-    id: "8123456780",
-    username: "@alfonsomanzanares83",
-    risk: "MEDIO",
-    followers: 280000,
-    posts: 64,
-    comments: 2100,
-    hashtags: ["#alucin", "#jalo"],
-    emojis: ["🤠", "🔥"],
-    music: ["Corridos_Mix"],
-  },
-  {
-    id: "9123456781",
-    username: "@elheraldodemexico",
-    risk: "NULO",
-    followers: 150000,
-    posts: 230,
-    comments: 8900,
-    hashtags: ["#noticias", "#mexico"],
-    emojis: ["🚨", "📰"],
-    music: ["Original_Sound"],
-  },
-];
-
-const RiskBadge = ({ risk }: { risk: string }) => {
-  const badgeClass = 
-    risk === "ALTO" ? "badge-alto text-glow" : 
-    risk === "MEDIO" ? "badge-medio" : "badge-nulo";
-  return <span className={`badge ${badgeClass}`}>{risk}</span>;
-};
+import { useState } from "react";
+import { Search, Loader2, AlertTriangle, ChevronRight, ChevronLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getTableRows, type TableRow } from "@/lib/api";
 
 export function RegistrosTable() {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [risk, setRisk] = useState("TODOS");
 
-  const toggleRow = (id: string) => {
-    const newSet = new Set(expandedRows);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setExpandedRows(newSet);
+  const limit = 10;
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["dashboardTable", page, limit, risk, search],
+    queryFn: () => getTableRows({ page, limit, risk, search }),
+  });
+
+  const tableRows = data?.data || [];
+  const totalRecords = data?.total || 0;
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  const formatNumber = (num: number) => new Intl.NumberFormat('es-MX').format(num);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-MX', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
   };
 
-  return (
-    <div className="w-full">
-      {/* Section Header */}
-      <div className="section-header">
-        <h2 className="section-header-title">Registros</h2>
-        <div className="section-header-line" />
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-24">
+        <Loader2 className="h-6 w-6 text-primary animate-spin" />
       </div>
+    );
+  }
 
-      <div className="data-table-container">
-        {/* Table Controls / Filters */}
-        <div className="data-table-controls">
-          <div>
-            <h3 className="text-sm font-mono tracking-widest text-primary text-glow uppercase mb-1">
-              Cuentas Detectadas
-            </h3>
-            <p className="text-xs text-muted-foreground font-mono">archivo: mongodb_connected</p>
+  return (
+    <div className="w-full space-y-4">
+      {/* Controls Section: Search & Filters */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative w-full sm:w-72">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-muted-foreground" />
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
-              <input type="text" placeholder="buscar cuenta..." className="data-table-input pl-9" />
-            </div>
-            <select className="data-table-input">
-              <option>Riesgo: todos</option>
-              <option>Alto</option>
-              <option>Medio</option>
-              <option>Nulo</option>
-            </select>
-            <select className="data-table-input hide-on-mobile-cell">
-              <option>Hashtag: todos</option>
-            </select>
-          </div>
+          <input
+            type="text"
+            placeholder="Buscar usuario o descripción..."
+            className="w-full bg-background/40 border border-primary/30 rounded-md pl-10 pr-3 py-2 text-xs font-mono focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/50 transition-colors"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); 
+            }}
+          />
         </div>
 
-        {/* Data Table */}
-        <div className="table-scroll">
-          <table className="data-table">
+        <select 
+          className="bg-background/40 border border-primary/30 rounded-md px-4 py-2 text-xs font-mono focus:outline-none focus:border-primary text-foreground w-full sm:w-auto transition-colors"
+          value={risk}
+          onChange={(e) => {
+            setRisk(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="TODOS">Todos los Riesgos</option>
+          <option value="ALTO">Riesgo: Alto</option>
+          <option value="MEDIO">Riesgo: Medio</option>
+          <option value="NULO">Riesgo: Nulo</option>
+        </select>
+      </div>
+
+      {/* Table Section */}
+      <div className="glass-panel rounded-xl overflow-hidden border border-primary/20">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr>
-                <th>Cuenta</th>
-                <th>Riesgo</th>
-                <th>Seguidores</th>
-                <th className="hide-on-mobile-cell">Posts</th>
-                <th className="hide-on-mobile-cell">Comentarios</th>
-                <th className="hide-on-mobile-cell">Hashtags</th>
-                <th className="hide-on-mobile-cell">Emojis</th>
-                <th className="md:hidden"></th>
+              <tr className="border-b border-primary/20 bg-primary/5">
+                <th className="px-4 py-3 text-xs font-mono tracking-widest text-muted-foreground uppercase whitespace-nowrap">Usuario</th>
+                <th className="px-4 py-3 text-xs font-mono tracking-widest text-muted-foreground uppercase">Descripción</th>
+                <th className="px-4 py-3 text-xs font-mono tracking-widest text-muted-foreground uppercase whitespace-nowrap">Métricas</th>
+                <th className="px-4 py-3 text-xs font-mono tracking-widest text-muted-foreground uppercase whitespace-nowrap">Riesgo</th>
+                <th className="px-4 py-3 text-xs font-mono tracking-widest text-muted-foreground uppercase whitespace-nowrap">Captura</th>
               </tr>
             </thead>
-            <tbody>
-              {TABLE_DATA.length === 0 ? (
+            <tbody className="divide-y divide-primary/10">
+              {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12">
-                    <Database className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Sin datos cargados</p>
+                  <td colSpan={5} className="h-32 text-center">
+                    <Loader2 className="h-6 w-6 text-primary animate-spin mx-auto" />
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={5} className="h-32 text-center text-red-500 font-mono text-xs">
+                    <div className="flex flex-col items-center gap-2">
+                      <AlertTriangle className="h-5 w-5" />
+                      Error al cargar los registros.
+                    </div>
+                  </td>
+                </tr>
+              ) : tableRows.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="h-32 text-center text-muted-foreground font-mono text-xs">
+                    No se encontraron registros que coincidan con la búsqueda.
                   </td>
                 </tr>
               ) : (
-                TABLE_DATA.map((row) => (
-                  <React.Fragment key={row.id}>
-                    <tr onClick={() => toggleRow(row.id)}>
-                      <td className="text-primary hover:underline">{row.username}</td>
-                      <td><RiskBadge risk={row.risk} /></td>
-                      <td className="font-mono">{row.followers.toLocaleString()}</td>
-                      <td className="hide-on-mobile-cell font-mono">{row.posts}</td>
-                      <td className="hide-on-mobile-cell font-mono">{row.comments.toLocaleString()}</td>
-                      <td className="hide-on-mobile-cell text-xs">{row.hashtags.join(", ")}</td>
-                      <td className="hide-on-mobile-cell tracking-widest">{row.emojis.join("")}</td>
-                      <td className="md:hidden text-right">
-                        {expandedRows.has(row.id) ? (
-                          <ChevronUp className="inline h-4 w-4 text-primary" />
+                tableRows.map((row: TableRow) => (
+                  <tr key={row.videoId} className="hover:bg-primary/5 transition-colors group">
+                    {/* User Info */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        {row.avatarUrl ? (
+                          <img src={row.avatarUrl} alt={row.username} className="h-8 w-8 rounded-full border border-primary/30 object-cover" />
                         ) : (
-                          <ChevronDown className="inline h-4 w-4 text-muted-foreground" />
+                          <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/30" />
                         )}
-                      </td>
-                    </tr>
+                        <div>
+                          <p className="text-sm font-medium text-primary cursor-pointer hover:underline">@{row.username}</p>
+                          <p className="text-[10px] font-mono text-muted-foreground">ID: {row.videoId}</p>
+                        </div>
+                      </div>
+                    </td>
                     
-                    {/* Mobile Expanded View */}
-                    {expandedRows.has(row.id) && (
-                      <tr>
-                        <td colSpan={4} className="p-0 border-0">
-                          <div className="mobile-expanded-row">
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-xs font-mono text-muted-foreground uppercase block mb-1">Posts</span>
-                                <span className="font-mono">{row.posts}</span>
-                              </div>
-                              <div>
-                                <span className="text-xs font-mono text-muted-foreground uppercase block mb-1">Comentarios</span>
-                                <span className="font-mono">{row.comments.toLocaleString()}</span>
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-xs font-mono text-muted-foreground uppercase block mb-1">Top Hashtags</span>
-                              <span className="text-sm">{row.hashtags.join(", ")}</span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-mono text-muted-foreground uppercase block mb-1">Top Emojis</span>
-                              <span className="text-sm tracking-widest">{row.emojis.join(" ")}</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
+                    {/* Description */}
+                    <td className="px-4 py-3">
+                      <p className="text-xs text-foreground/80 line-clamp-2 max-w-md">
+                        {row.description || <span className="text-muted-foreground italic">Sin descripción</span>}
+                      </p>
+                    </td>
+
+                    {/* Metrics */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-mono text-foreground">
+                          ▶ {formatNumber(row.plays)}
+                        </span>
+                        <span className="text-xs font-mono text-foreground">
+                          ❤ {formatNumber(row.likes)}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Risk Badge */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`badge ${
+                        row.riskLevel === 'ALTO' ? 'badge-alto text-glow' : 
+                        row.riskLevel === 'MEDIO' ? 'badge-medio' : 
+                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                      }`}>
+                        {row.riskLevel}
+                      </span>
+                    </td>
+
+                    {/* Scraped Date */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {formatDate(row.scrapedAt)}
+                      </span>
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-
-        {/* Footer Export Controls */}
-        <div className="p-4 md:p-6 bg-black/10 flex justify-end items-center gap-3 border-t border-primary/10">
-          <span className="text-xs font-mono text-muted-foreground">exportar:</span>
-          <button className="glass-panel glass-panel-hover px-3 py-1.5 rounded-md text-xs font-mono tracking-widest text-primary transition-all">
-            JSON
-          </button>
-          <button className="glass-panel glass-panel-hover px-3 py-1.5 rounded-md text-xs font-mono tracking-widest text-primary transition-all">
-            CSV
-          </button>
-        </div>
+        
+        {/* Pagination Footer */}
+        {!isLoading && !isError && tableRows.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-primary/20 bg-primary/5">
+            <span className="text-xs font-mono text-muted-foreground">
+              Mostrando {tableRows.length} de {totalRecords} registros
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-1.5 rounded-md border border-primary/30 text-primary hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="flex items-center px-2 text-xs font-mono text-foreground">
+                Página {page} de {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || totalPages === 0}
+                className="p-1.5 rounded-md border border-primary/30 text-primary hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,51 +2,6 @@ import { getKPIs, type KPI } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-const KPI_DATA = [
-  {
-    id: "monitored",
-    title: "Cuentas Monitoreadas",
-    value: "142",
-    subtext: "Perfiles Únicos",
-    indicatorColor: "text-red-500 bg-red-500",
-  },
-  {
-    id: "followers",
-    title: "Seguidores Totales",
-    value: "15.4M",
-    subtext: "Alcance Acumulado",
-    indicatorColor: "text-amber-500 bg-amber-500",
-  },
-  {
-    id: "publications",
-    title: "Publicaciones",
-    value: "843",
-    subtext: "Videos Registrados",
-    indicatorColor: "text-cyan-500 bg-cyan-500",
-  },
-  {
-    id: "comments",
-    title: "Comentarios",
-    value: "42.1K",
-    subtext: "Interacciones",
-    indicatorColor: "text-blue-500 bg-blue-500",
-  },
-  {
-    id: "hashtag",
-    title: "Hashtag Principal",
-    value: "#4L",
-    subtext: "Más Frecuente",
-    indicatorColor: "text-slate-300 bg-slate-300",
-  },
-  {
-    id: "emoji",
-    title: "Emoji Principal",
-    value: "🍕",
-    subtext: "Más Frecuente",
-    indicatorColor: "text-slate-300 bg-slate-300",
-  },
-];
-
 export function KpiResumen() {
   const { data: kpis = [], isLoading } = useQuery<KPI[]>({
     queryKey: ["dashboardKPIs"],

@@ -4,7 +4,7 @@ export interface KPI {
     value: string;
     subtext: string;
     indicatorColour: string;
-};
+}
 
 export async function getKPIs(): Promise<KPI[]> {
     const response = await fetch("/api/v1/dashboard/kpis");
@@ -14,25 +14,43 @@ export async function getKPIs(): Promise<KPI[]> {
     return response.json();
 }
 
-export interface Account {
+export interface AccountFollowers {
     name: string;
     followers: number;
-};
+}
 
-export interface Hashtag {
-    label: string
+export interface AccountPosts {
+    name: string;
+    posts: number;
+}
+
+export interface MetadataItem {
+    name: string;
     count: number;
-};
+}
 
 export interface Charts {
-    top_accounts: Account[];
-    top_hashtags: Hashtag[];
-};
+    topFollowers: AccountFollowers[];
+    topPosts: AccountPosts[];
+}
+
+export interface Metadata {
+    topHashtags: MetadataItem[];
+    topEmojis: MetadataItem[];
+}
 
 export async function getCharts(): Promise<Charts> {
     const response = await fetch("/api/v1/dashboard/charts");
     if (!response.ok) {
-        throw new Error("Failed to fetch Charts data from server");
+        throw new Error("Failed to fetch charts");
+    }
+    return response.json();
+}
+
+export async function getTopMetadata(): Promise<Metadata> {
+    const response = await fetch("/api/v1/dashboard/metadata");
+    if (!response.ok) {
+        throw new Error("Failed to fetch Metadata");
     }
     return response.json();
 }
@@ -46,11 +64,14 @@ export interface TableRow {
     likes: number;
     riskLevel: string;
     scrapedAt: string;
-};
+}
 
 export interface TableData {
+    total: number;
+    page: number;
+    limit: number;
     data: TableRow[];
-};
+}
 
 export async function getTableRows({ page = 1, limit = 10, risk = "", search = ""}): Promise<TableData> {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
