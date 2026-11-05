@@ -1,27 +1,25 @@
 package models
 
-type ChartAccountItem struct {
-	Username  string `json:"username" bson:"username"`
-	Followers int    `json:"followers" bson:"followers"`
-	Posts     int    `json:"posts" bson:"posts"`
-	Comments  int    `json:"comments" bson:"comments"`
+type Account struct {
+	Name      string `bson:"_id" json:"name"`
+	Followers int64  `bson:"followers" json:"followers"`
+}
+
+type Hashtag struct {
+	Label string `bson:"_id" json:"label"`
+	Count int64  `bson:"count" json:"count"`
 }
 
 type ChartsResponse struct {
-	Body struct {
-		Items []ChartAccountItem `json:"items"`
-	}
+	TopAccounts []Account `json:"top_accounts"`
+	TopHashtags []Hashtag `json:"top_hashtags"`
 }
 
-type MetadataItem struct {
-	Name  string `json:"name" bson:"_id"`
-	Count int    `json:"count" bson:"count"`
+type FacetResult struct {
+	TopAccounts []Account `bson:"top_accounts"`
+	TopHashtags []Hashtag `bson:"top_hashtags"`
 }
 
-type MetadataResponse struct {
-	Body struct {
-		Hashtags []MetadataItem `json:"hashtags"`
-		Emojis   []MetadataItem `json:"emojis"`
-		Music    []MetadataItem `json:"music"`
-	}
+type ChartOutput struct {
+	Body ChartsResponse
 }

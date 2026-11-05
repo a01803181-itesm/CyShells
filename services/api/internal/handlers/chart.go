@@ -3,91 +3,66 @@ package handlers
 import (
 	"context"
 	"cyshells-api/internal/models"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetCharts(db *mongo.Database) func(ctx context.Context, input *struct{}) (*models.ChartsResponse, error) {
-	return func(ctx context.Context, input *struct{}) (*models.ChartsResponse, error) {
+func GetDashboardCharts(db *mongo.Database) func(context.Context, *struct{}) (*models.ChartOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*models.ChartOutput, error) {
+		timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
 		collection := db.Collection("tiktoks")
 
-		pipeline := bson.A{
-			bson.D{{Key: "$group", Value: bson.D{
-				{Key: "_id", Value: "$user.id"},
-				{Key: "username", Value: bson.D{{Key: "$first", Value: "$user.username"}}},
-				{Key: "followers", Value: bson.D{{Key: "$first", Value: "$user.followers"}}},
-				{Key: "posts", Value: bson.D{{Key: "$sum", Value: 1}}},
-				{Key: "comments", Value: bson.D{{Key: "$sum", Value: "$comments_count"}}},
+		pipeline := mongo.Pipeline{
+			{{Key: "$facet", Value: bson.D{
+				{Key: "top_accounts", Value: bson.A{
+					bson.D{{Key: "$group", Value: bson.D{
+						{Key: "_id", Value: "$user.username"},
+						{Key: "followers", Value: bson.D{{Key: "$max", Value: "$user.followers"}}},
+					}}},
+					bson.D{{Key: "$sort", Value: bson.D{{Key: "followers", Value: -1}}}},
+					bson.D{{Key: "$limit", Value: 7}},
+				}},
+				{Key: "top_hashtags", Value: bson.A{
+					bson.D{{Key: "$unwind", Value: "$hashtags"}},
+					bson.D{{Key: "$group", Value: bson.D{
+						{Key: "_id", Value: "$hashtags"},
+						{Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}},
+					}}},
+					bson.D{{Key: "$sort", Value: bson.D{{Key: "count", Value: -1}}}},
+					bson.D{{Key: "$limit", Value: 6}},
+				}},
 			}}},
-			bson.D{{Key: "$sort", Value: bson.D{{Key: "followers", Value: -1}}}},
-			bson.D{{Key: "$limit", Value: 50}},
 		}
 
-		cursor, err := collection.Aggregate(ctx, pipeline)
-
+		cursor, err := collection.Aggregate(timeoutCtx, pipeline)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("Database aggregation failed", err)
+			return nil, huma.Error500InternalServerError("Failed to execute charts aggregation", err)
+		}
+		defer cursor.Close(timeoutCtx)
+
+		var facetResults []models.FacetResult
+		if err = cursor.All(timeoutCtx, &facetResults); err != nil || len(facetResults) == 0 {
+			return nil, huma.Error500InternalServerError("Failed to decode charts results", err)
 		}
 
-		defer cursor.Close(ctx)
+		res := facetResults[0]
 
-		var items []models.ChartAccountItem
-		if err = cursor.All(ctx, &items); err != nil {
-			return nil, huma.Error500InternalServerError("Failed to decode charts data", err)
+		if res.TopAccounts == nil {
+			res.TopAccounts = []models.Account{}
+		}
+		if res.TopHashtags == nil {
+			res.TopHashtags = []models.Hashtag{}
 		}
 
-		resp := &models.ChartsResponse{}
-		resp.Body.Items = items
-		return resp, nil
-	}
-}
-
-func GetTopMetadata(db *mongo.Database) func(ctx context.Context, input *struct{}) (*models.MetadataResponse, error) {
-	return func(ctx context.Context, input *struct{}) (*models.MetadataResponse, error) {
-		collection := db.Collection("tiktoks")
-
-		getTopN := func(field string, limit int) ([]models.MetadataItem, error) {
-			pipeline := bson.A{
-				bson.D{{Key: "$unwind", Value: "$" + field}},
-				bson.D{{Key: "$group", Value: bson.D{
-					{Key: "_id", Value: "$" + field},
-					{Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}},
-				}}},
-				bson.D{{Key: "$sort", Value: bson.D{{Key: "count", Value: -1}}}},
-				bson.D{{Key: "$limit", Value: limit}},
-			}
-
-			cursor, err := collection.Aggregate(ctx, pipeline)
-
-			if err != nil {
-				return nil, err
-			}
-
-			var results []models.MetadataItem
-			if err = cursor.All(ctx, &results); err != nil {
-				return nil, err
-			}
-
-			return results, nil
+		uiPayload := models.ChartsResponse{
+			TopAccounts: res.TopAccounts,
+			TopHashtags: res.TopHashtags,
 		}
 
-		hashtags, err := getTopN("hashtags", 10)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("Failed to fetch hashtags", err)
-		}
-
-		emojis, err := getTopN("emojis", 10)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("Failed to fetch emojis", err)
-		}
-
-		resp := &models.MetadataResponse{}
-		resp.Body.Hashtags = hashtags
-		resp.Body.Emojis = emojis
-		resp.Body.Music = []models.MetadataItem{}
-
-		return resp, nil
+		return &models.ChartOutput{Body: uiPayload}, nil
 	}
 }

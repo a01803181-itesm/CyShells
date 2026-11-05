@@ -17,30 +17,20 @@ import (
 
 func RegisterDashboardRoutes(api huma.API, db *mongo.Database) {
 	huma.Register(api, huma.Operation{
-		OperationID: "get-dashboard-charts",
-		Method: http.MethodGet,
-		Path: "/api/v1/dashboard/charts/accounts",
-		Summary: "Get account metrics for charts",
-		Description: "Returns aggregated followers, posts, and comments per monitored account.",
-		Tags: []string{"Dashboard", "Charts", "GET"},
-	}, handlers.GetCharts(db))
-
-	huma.Register(api, huma.Operation{
-		OperationID: "get-dashboard-metadata",
-		Method: http.MethodGet,
-		Path: "/api/v1/dashboard/metadata/top",
-		Summary: "Get top metadata",
-		Description: "Returns the most frequently used hashtags and emojis.",
-		Tags: []string{"Dashboard", "Charts", "GET", "Top"},
-	}, handlers.GetTopMetadata(db))
-
-	huma.Register(api, huma.Operation{
 		OperationID: "get-dashboard-kpis",
 		Method: http.MethodGet,
 		Path: "/api/v1/dashboard/kpis",
 		Description: "Returns the KPIs for the dashboard Home section",
 		Tags: []string{"Dashboard", "KPIs", "GET", "Top"},
 	}, handlers.GetDashboardKPIs(db))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-dashboard-charts",
+		Method: http.MethodGet,
+		Path: "/api/v1/dashboard/charts",
+		Description: "Returns the Charts data for the dashboard Home section",
+		Tags: []string{"Dashboard", "Charts", "GET"},
+	}, handlers.GetDashboardCharts(db))
 }
 
 func main() {
